@@ -137,35 +137,55 @@ def main():
     #-------------------------------
     # Fonctions definissant les positions legales et placement de mur aléatoire
     #-------------------------------
+    def is_okay_path_A_star(player,posPlayers, row,col):
     
-    def legal_wall_position(pos):
+        g =np.ones((nbLignes,nbCols),dtype=bool)  # une matrice remplie par defaut a True  
+        for w in wallStates(allWalls):            # on met False quand murs
+            g[w]=False
+        g[row][col] = False # on rajoute le positionenement du nouveau mur
+        for i in range(nbLignes):                 # on exclut aussi les bordures du plateau
+            g[0][i]=False
+            g[1][i]=False
+            g[nbLignes-1][i]=False
+            g[nbLignes-2][i]=False
+            g[i][0]=False
+            g[i][1]=False
+            g[i][nbLignes-1]=False
+            g[i][nbLignes-2]=False
+        p = ProblemeGrid2D(posPlayers[player],objectifs[player],g,'manhattan')
+        path = probleme.astar(p,verbose=False)
+        
+        return path[-1]==objectifs[player]
+
+
+    def legal_wall_position(pos, player, posPlayers):
         row,col = pos
         # une position legale est dans la carte et pas sur un mur deja pose ni sur un joueur
         # attention: pas de test ici qu'il reste un chemin vers l'objectif
-        return ((pos not in wallStates(allWalls)) and (pos not in playerStates(players)) and row>lMin and row<lMax-1 and col>=cMin and col<cMax)
+
+        # on ajoute le test ici qu'il rest un chemin vers l'objectif
+        if((pos not in wallStates(allWalls)) and (pos not in playerStates(players)) and row>lMin and row<lMax-1 and col>=cMin and col<cMax):
+            return is_okay_path_A_star(1-player,posPlayers, row, col)
+        return False
+
     
-    def draw_random_wall_location():
+    def draw_random_wall_location(player, posPlayers):
         # tire au hasard un couple de position permettant de placer un mur
         while True:
             random_loc = (random.randint(lMin,lMax),random.randint(cMin,cMax))
-            if legal_wall_position(random_loc):  
+            if legal_wall_position(random_loc, player, posPlayers):  
                 inc_pos =[(0,1),(0,-1),(1,0),(-1,0)] 
                 random.shuffle(inc_pos)
                 for w in inc_pos:
                     random_loc_bis = (random_loc[0] + w[0],random_loc[1]+w[1])
-                    if legal_wall_position(random_loc_bis):
+                    if legal_wall_position(random_loc_bis,player, posPlayers):
                         return(random_loc,random_loc_bis)
 
     #-------------------------------
     # Le joueur 0 place tous les murs au hasard
     #-------------------------------
                     
-                     
-    for i in range(0,len(walls[0]),2): 
-        ((x1,y1),(x2,y2)) = draw_random_wall_location()
-        walls[0][i].set_rowcol(x1,y1)
-        walls[0][i+1].set_rowcol(x2,y2)
-        game.mainiteration()
+        
 
    
     
@@ -174,22 +194,24 @@ def main():
     #-------------------------------
     
 
+    def calcul_path_A_star(player,posPlayers):
     
-    g =np.ones((nbLignes,nbCols),dtype=bool)  # une matrice remplie par defaut a True  
-    for w in wallStates(allWalls):            # on met False quand murs
-        g[w]=False
-    for i in range(nbLignes):                 # on exclut aussi les bordures du plateau
-        g[0][i]=False
-        g[1][i]=False
-        g[nbLignes-1][i]=False
-        g[nbLignes-2][i]=False
-        g[i][0]=False
-        g[i][1]=False
-        g[i][nbLignes-1]=False
-        g[i][nbLignes-2]=False
-    p = ProblemeGrid2D(initStates[1],objectifs[1],g,'manhattan')
-    path = probleme.astar(p,verbose=False)
-    print ("Chemin trouvé:", path)
+        g =np.ones((nbLignes,nbCols),dtype=bool)  # une matrice remplie par defaut a True  
+        for w in wallStates(allWalls):            # on met False quand murs
+            g[w]=False
+        for i in range(nbLignes):                 # on exclut aussi les bordures du plateau
+            g[0][i]=False
+            g[1][i]=False
+            g[nbLignes-1][i]=False
+            g[nbLignes-2][i]=False
+            g[i][0]=False
+            g[i][1]=False
+            g[i][nbLignes-1]=False
+            g[i][nbLignes-2]=False
+        p = ProblemeGrid2D(posPlayers[player],objectifs[player],g,'manhattan')
+        path = probleme.astar(p,verbose=False)
+        print ("Chemin trouvé:", path)
+        return path
         
     
     #-------------------------------
@@ -199,21 +221,46 @@ def main():
             
     posPlayers = initStates
 
+    print(iterations)
+
+
+    walls_used=[0,0]
     for i in range(iterations):
+
+        player=2
+        if i%2==0:
+            player=0
+        else:
+            player=1
+
+        choix_du_jouer=random.choice([0,1])
+
+        if choix_du_jouer==0:
+            if walls_used[player]>=10:
+                choix_du_jouer=1
+            else:
+                wall_to_remplir=walls_used[player]
+                ((x1,y1),(x2,y2)) = draw_random_wall_location(player, posPlayers)
+                walls[player][wall_to_remplir].set_rowcol(x1,y1)
+                walls[player][wall_to_remplir+1].set_rowcol(x2,y2)
+                walls_used[player]=walls_used[player]+2
+
         
         # on fait bouger le joueur 1 jusqu'à son but
         # en suivant le chemin trouve avec A* 
-        
-        row,col = path[i]
-        posPlayers[1]=(row,col)
-        players[1].set_rowcol(row,col)
-        print ("pos joueur 1:", row,col)
-        if (row,col) == objectifs[1]:
-            print("le joueur 1 a atteint son but!")
-            break
+        if choix_du_jouer==1: #Il a choisi joueur
+            path=calcul_path_A_star(player,posPlayers)
+            row,col = path[1]
+            posPlayers[player]=(row,col)
+            players[player].set_rowcol(row,col)
+            print ("pos joueur 1:", row,col)
+            if (row,col) == objectifs[player]:
+                print("le joueur 1 a atteint son but!")
+                break
         
         # mise à jour du pleateau de jeu
         game.mainiteration()
+        print(walls_used)
 
                 
         
