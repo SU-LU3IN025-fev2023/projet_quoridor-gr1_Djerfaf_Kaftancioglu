@@ -137,10 +137,10 @@ def main():
     #-------------------------------
     # Fonctions definissant les positions legales et placement de mur aléatoire
     #-------------------------------
-    def is_okay_path_A_star(player,posPlayers, row,col):
+    def is_okay_path_A_star(player,posPlayers, row,col,wall_curr):
     
         g =np.ones((nbLignes,nbCols),dtype=bool)  # une matrice remplie par defaut a True  
-        for w in wallStates(allWalls):            # on met False quand murs
+        for w in wall_curr:            # on met False quand murs
             g[w]=False
         g[row][col] = False # on rajoute le positionenement du nouveau mur
         for i in range(nbLignes):                 # on exclut aussi les bordures du plateau
@@ -152,33 +152,39 @@ def main():
             g[i][1]=False
             g[i][nbLignes-1]=False
             g[i][nbLignes-2]=False
+        
         p = ProblemeGrid2D(posPlayers[player],objectifs[player],g,'manhattan')
         path = probleme.astar(p,verbose=False)
+
+        print("IS OKAY PATH",path)
         
-        return path[-1]==objectifs[player]
+        return path[-1]==objectifs[player] and posPlayers[player] not in path[1:]
 
 
-    def legal_wall_position(pos, player, posPlayers):
+    def legal_wall_position(pos, player, posPlayers,wall_curr):
         row,col = pos
         # une position legale est dans la carte et pas sur un mur deja pose ni sur un joueur
         # attention: pas de test ici qu'il reste un chemin vers l'objectif
 
         # on ajoute le test ici qu'il rest un chemin vers l'objectif
         if((pos not in wallStates(allWalls)) and (pos not in playerStates(players)) and row>lMin and row<lMax-1 and col>=cMin and col<cMax):
-            return is_okay_path_A_star(1-player,posPlayers, row, col)
+            return is_okay_path_A_star(1-player,posPlayers, row, col,wall_curr) and is_okay_path_A_star(player,posPlayers, row, col,wall_curr)
         return False
 
     
     def draw_random_wall_location(player, posPlayers):
         # tire au hasard un couple de position permettant de placer un mur
         while True:
+            wall_curr=wallStates(allWalls)
+            print("WALLL CURR",wall_curr)
             random_loc = (random.randint(lMin,lMax),random.randint(cMin,cMax))
-            if legal_wall_position(random_loc, player, posPlayers):  
+            if legal_wall_position(random_loc, player, posPlayers,wall_curr):
+                wall_curr.append(random_loc) 
                 inc_pos =[(0,1),(0,-1),(1,0),(-1,0)] 
                 random.shuffle(inc_pos)
                 for w in inc_pos:
                     random_loc_bis = (random_loc[0] + w[0],random_loc[1]+w[1])
-                    if legal_wall_position(random_loc_bis,player, posPlayers):
+                    if legal_wall_position(random_loc_bis,player, posPlayers,wall_curr):
                         return(random_loc,random_loc_bis)
 
     #-------------------------------
@@ -233,6 +239,8 @@ def main():
         else:
             player=1
 
+        print("Le joueur actuel :",player)
+
         choix_du_jouer=random.choice([0,1])
 
         if choix_du_jouer==0:
@@ -253,9 +261,9 @@ def main():
             row,col = path[1]
             posPlayers[player]=(row,col)
             players[player].set_rowcol(row,col)
-            print ("pos joueur 1:", row,col)
+            print ("pos joueur",player,":",row,col)
             if (row,col) == objectifs[player]:
-                print("le joueur 1 a atteint son but!")
+                print("le joueur",player,"a atteint son but!")
                 break
         
         # mise à jour du pleateau de jeu
