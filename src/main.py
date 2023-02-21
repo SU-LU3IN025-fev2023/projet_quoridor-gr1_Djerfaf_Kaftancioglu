@@ -21,13 +21,6 @@ import pySpriteWorld.glo
 from search.grid2D import ProblemeGrid2D
 from search import probleme
 
-
-
-
-
-
-
-
 # ---- ---- ---- ---- ---- ----
 # ---- Main                ----
 # ---- ---- ---- ---- ---- ----
@@ -42,6 +35,7 @@ def init(_boardname=None):
     game.populate_sprite_names(game.O)
     game.fps = 5  # frames per second
     game.mainiteration()
+    player = game.player
     player = game.player
     
 def main():
@@ -69,8 +63,10 @@ def main():
     cMin=2
     cMax=nbCols-2
    
-    
+    # game.add_players((2,2), game.player)
+    # game.layers['joueur']
     players = [o for o in game.layers['joueur']]
+    print(players)
     nbPlayers = len(players)
     
        
@@ -96,11 +92,11 @@ def main():
     #-------------------------------
     
     def wallStates(walls): 
-        # donne la liste des coordonnees dez murs
+        # donne la liste des coordonnees des murs
         return [w.get_rowcol() for w in walls]
     
     def playerStates(players):
-        # donne la liste des coordonnees dez joueurs
+        # donne la liste des coordonnees des joueurs
         return [p.get_rowcol() for p in players]
     
    
