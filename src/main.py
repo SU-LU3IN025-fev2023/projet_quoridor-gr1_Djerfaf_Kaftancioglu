@@ -130,7 +130,7 @@ def main():
     allObjectifs = ([(ligneObjectif[0],i) for i in range(cMin,cMax)],[(ligneObjectif[1],i) for i in range(cMin,cMax)])
     print("Tous les objectifs joueur 0", allObjectifs[0])
     print("Tous les objectifs joueur 1", allObjectifs[1])
-    objectifs =  (allObjectifs[0][random.randint(cMin,cMax-3)], allObjectifs[1][random.randint(cMin,cMax-3)])
+    objectifs =  [allObjectifs[0][random.randint(cMin,cMax-3)], allObjectifs[1][random.randint(cMin,cMax-3)]]
     print("Objectif joueur 0 choisi au hasard", objectifs[0])
     print("Objectif joueur 1 choisi au hasard", objectifs[1])
 
@@ -187,6 +187,27 @@ def main():
                     if legal_wall_position(random_loc_bis,player, posPlayers,wall_curr):
                         return(random_loc,random_loc_bis)
 
+    ###########################################################################################################################
+    ###########################################################################################################################
+    ###########################################################################################################################
+    ###########################################################################################################################
+    ###########################################################################################################################
+    ###########################################################################################################################
+    def draw_wall_proche(player, posPlayers):
+        # tire au hasard un couple de position permettant de placer un mur
+        while True:
+            wall_curr=wallStates(allWalls)
+            print("WALLL CURR",wall_curr)
+            random_loc = (posPlayers[1 - player][0],posPlayers[1 - player][1]+1)
+            if legal_wall_position(random_loc, player, posPlayers,wall_curr):
+                wall_curr.append(random_loc) 
+                inc_pos =[(0,1),(0,-1),(1,0),(-1,0)] 
+                random.shuffle(inc_pos)
+                for w in inc_pos:
+                    random_loc_bis = (random_loc[0] + w[0],random_loc[1]+w[1])
+                    if legal_wall_position(random_loc_bis,player, posPlayers,wall_curr):
+                        return(random_loc,random_loc_bis)
+
     #-------------------------------
     # Le joueur 0 place tous les murs au hasard
     #-------------------------------
@@ -218,29 +239,40 @@ def main():
         path = probleme.astar(p,verbose=False)
         print ("Chemin trouvé:", path)
         return path
+    
+    def calcul_path_A_star_dynamique(player,posPlayers):
+    
+        g =np.ones((nbLignes,nbCols),dtype=bool)  # une matrice remplie par defaut a True  
+        for w in wallStates(allWalls):            # on met False quand murs
+            g[w]=False
+        for i in range(nbLignes):                 # on exclut aussi les bordures du plateau
+            g[0][i]=False
+            g[1][i]=False
+            g[nbLignes-1][i]=False
+            g[nbLignes-2][i]=False
+            g[i][0]=False
+            g[i][1]=False
+            g[i][nbLignes-1]=False
+            g[i][nbLignes-2]=False
         
-    
-    #-------------------------------
-    # Boucle principale de déplacements 
-    #-------------------------------
-    
+        p = ProblemeGrid2D(posPlayers[player],objectifs[player],g,'manhattan')
+        path_init = probleme.astar(p,verbose=False)
+
+        for obj in allObjectifs[player]:
+            p = ProblemeGrid2D(posPlayers[player],obj,g,'manhattan')
+            path_dynamique = probleme.astar(p,verbose=False)
+            if len(path_dynamique) < len(path_init):
+                path_init = path_dynamique
+                objectifs[player] = obj
             
-    posPlayers = initStates
+        
+        print ("Chemin trouvé:", path_init)
+        return path_init
 
-    print(iterations)
 
-
-    walls_used=[0,0]
-    for i in range(iterations):
-
-        player=2
-        if i%2==0:
-            player=0
-        else:
-            player=1
-
-        print("Le joueur actuel :",player)
-
+    def jouer_aleatoire(player, walls_used):
+        """stratégie aléatoire ou les deux joeurs ont le choix entre avancer ou placer un mur aléatoirement 
+        """
         choix_du_jouer=random.choice([0,1])
 
         if choix_du_jouer==0:
@@ -261,18 +293,158 @@ def main():
             row,col = path[1]
             posPlayers[player]=(row,col)
             players[player].set_rowcol(row,col)
-            print ("pos joueur",player,":",row,col)
+            #print ("pos joueur",player,":",row,col)
             if (row,col) == objectifs[player]:
                 print("le joueur",player,"a atteint son but!")
-                break
+                return True, player
+            
+        return False, player
+
+    def jouer_aleatoire_avance(player, walls_used):
+        """stratégie aléatoire avancée
+        
+        si le jouer est proche du cible on doit avancer et non pas constuire un mur aléatoirement
+        """
+
+        # calcul de la longeur du path pour les deux joeurs :
+        choix_du_jouer = 1 if len(calcul_path_A_star(player,posPlayers)) < len(calcul_path_A_star(1 - player,posPlayers)) else 0
+
+        if choix_du_jouer==0:
+            if walls_used[player]>=10:
+                choix_du_jouer=1
+            else:
+                wall_to_remplir=walls_used[player]
+                ((x1,y1),(x2,y2)) = draw_random_wall_location(player, posPlayers)
+                walls[player][wall_to_remplir].set_rowcol(x1,y1)
+                walls[player][wall_to_remplir+1].set_rowcol(x2,y2)
+                walls_used[player]=walls_used[player]+2
+
+        
+        # on fait bouger le joueur 1 jusqu'à son but
+        # en suivant le chemin trouve avec A* 
+        if choix_du_jouer==1: #Il a choisi joueur
+            path=calcul_path_A_star(player,posPlayers)
+            row,col = path[1]
+            posPlayers[player]=(row,col)
+            players[player].set_rowcol(row,col)
+            #print ("pos joueur",player,":",row,col)
+            if (row,col) == objectifs[player]:
+                print("le joueur",player,"a atteint son but!")
+                return True, player
+            
+        return False, player
+
+    
+    def jouer_objectif_proche(player, walls_used):
+        """stratégie aléatoire avancée
+        
+        si le jouer est proche du cible on doit avancer et non pas constuire un mur aléatoirement
+        """
+
+        # calcul de la longeur du path pour les deux joeurs :
+        choix_du_jouer = 1 if len(calcul_path_A_star(player,posPlayers)) < len(calcul_path_A_star(1 - player,posPlayers)) else 0
+
+        if choix_du_jouer==0:
+            if walls_used[player]>=10:
+                choix_du_jouer=1
+            else:
+                wall_to_remplir=walls_used[player]
+                ((x1,y1),(x2,y2)) = draw_random_wall_location(player, posPlayers)
+                walls[player][wall_to_remplir].set_rowcol(x1,y1)
+                walls[player][wall_to_remplir+1].set_rowcol(x2,y2)
+                walls_used[player]=walls_used[player]+2
+
+        
+        # on fait bouger le joueur 1 jusqu'à son but
+        # en suivant le chemin trouve avec A* 
+        if choix_du_jouer==1: #Il a choisi joueur
+            path=calcul_path_A_star_dynamique(player,posPlayers)
+            row,col = path[1]
+            posPlayers[player]=(row,col)
+            players[player].set_rowcol(row,col)
+            #print ("pos joueur",player,":",row,col)
+            if (row,col) == objectifs[player]:
+                print("le joueur",player,"a atteint son but!")
+                return True, player
+            
+        return False, player
+    
+    def jouer_placer_mur_proche(player, walls_used):
+        """stratégie aléatoire avancée
+        
+        si le jouer est proche du cible on doit avancer et non pas constuire un mur aléatoirement
+        """
+
+        # calcul de la longeur du path pour les deux joeurs :
+        choix_du_jouer = 1 if len(calcul_path_A_star(player,posPlayers)) < len(calcul_path_A_star(1 - player,posPlayers)) else 0
+
+        if choix_du_jouer==0:
+            if walls_used[player]>=10:
+                choix_du_jouer=1
+            else:
+                wall_to_remplir=walls_used[player]
+                ((x1,y1),(x2,y2)) = draw_wall_proche(player, posPlayers)
+                walls[player][wall_to_remplir].set_rowcol(x1,y1)
+                walls[player][wall_to_remplir+1].set_rowcol(x2,y2)
+                walls_used[player]=walls_used[player]+2
+
+        
+        # on fait bouger le joueur 1 jusqu'à son but
+        # en suivant le chemin trouve avec A* 
+        if choix_du_jouer==1: #Il a choisi joueur
+            path=calcul_path_A_star_dynamique(player,posPlayers)
+            row,col = path[1]
+            posPlayers[player]=(row,col)
+            players[player].set_rowcol(row,col)
+            #print ("pos joueur",player,":",row,col)
+            if (row,col) == objectifs[player]:
+                print("le joueur",player,"a atteint son but!")
+                return True, player
+            
+        return False, player
+
+
+    def placer_les_murs_intelligement(player):
+        legal_walls=[]
+        for i in range(lMin,lMax):
+            for j in range(cMin,cMax):
+                voisins=[(0,1),(0,-1),(1,0),(-1,0)]
+                for v in voisins:
+                    if legal_wall_position((i,j), player, posPlayers,allWalls) and legal_wall_position((v[0]+i,v[1]+j), player, posPlayers,allWalls):
+                        if ((i,j),(i+v[0],j+v[1])) not in legal_walls:
+                            legal_walls.append((i,j),(i+v[0],j+v[1]))
+
+        
+          
+    
+    #-------------------------------
+    # Boucle principale de déplacements 
+    #-------------------------------
+    
+            
+    posPlayers = initStates
+
+    print(iterations)
+
+
+    walls_used=[0,0]
+    for i in range(iterations):
+
+        player=2
+        if i%2==0:
+            player=0
+        else:
+            player=1
+
+        # print("Le joueur actuel :",player)
+        
+        end,gagnat = jouer_aleatoire(player, walls_used) if player == 0 else jouer_placer_mur_proche(player, walls_used)    
+        if end:
+            return gagnat
         
         # mise à jour du pleateau de jeu
         game.mainiteration()
-        print(walls_used)
-
-                
-        
-            
+        # print(walls_used)
     
     pygame.quit()
     
@@ -284,9 +456,18 @@ def main():
         
     
     
-   
+from collections import Counter
 
 if __name__ == '__main__':
+    #gagnat = []
+    #for i in range(0,30):
+    #    gagnat.append(main())
+    #
+#
+    #count = Counter(gagnat)
+    #most_common_element = count.most_common(1)[0][0]
+    #print(most_common_element)
+
     main()
     
 
