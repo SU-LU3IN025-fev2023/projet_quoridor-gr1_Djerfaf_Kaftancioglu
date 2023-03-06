@@ -195,18 +195,19 @@ def main():
     ###########################################################################################################################
     def draw_wall_proche(player, posPlayers):
         # tire au hasard un couple de position permettant de placer un mur
-        while True:
-            wall_curr=wallStates(allWalls)
-            print("WALLL CURR",wall_curr)
-            random_loc = (posPlayers[1 - player][0],posPlayers[1 - player][1]+1)
-            if legal_wall_position(random_loc, player, posPlayers,wall_curr):
-                wall_curr.append(random_loc) 
-                inc_pos =[(0,1),(0,-1),(1,0),(-1,0)] 
-                random.shuffle(inc_pos)
-                for w in inc_pos:
-                    random_loc_bis = (random_loc[0] + w[0],random_loc[1]+w[1])
-                    if legal_wall_position(random_loc_bis,player, posPlayers,wall_curr):
-                        return(random_loc,random_loc_bis)
+        wall_curr=wallStates(allWalls)
+        print("WALLL CURR",wall_curr)
+        random_loc = (posPlayers[1 - player][0],posPlayers[1 - player][1]+1)
+        if legal_wall_position(random_loc, player, posPlayers,wall_curr):
+            wall_curr.append(random_loc) 
+            inc_pos =[(0,1),(0,-1),(1,0),(-1,0)] 
+            random.shuffle(inc_pos)
+            for w in inc_pos:
+                random_loc_bis = (random_loc[0] + w[0],random_loc[1]+w[1])
+                if legal_wall_position(random_loc_bis,player, posPlayers,wall_curr):
+                    return(random_loc,random_loc_bis)
+        
+        return draw_random_wall_location(player, posPlayers)
 
     #-------------------------------
     # Le joueur 0 place tous les murs au hasard
