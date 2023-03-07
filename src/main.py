@@ -50,8 +50,8 @@ def main():
     iterations = 100 # default
     if len(sys.argv) == 2:
         iterations = int(sys.argv[1])
-    print ("Iterations: ")
-    print (iterations)
+    #print ("Iterations: ")
+    #print (iterations)
 
     init()
     
@@ -79,7 +79,7 @@ def main():
     # positions initiales des joueurs
     initStates = [o.get_rowcol() for o in players]
     ligneObjectif = (initStates[1][0],initStates[0][0]) # chaque joueur cherche a atteindre la ligne ou est place l'autre 
-    print(ligneObjectif)
+    #print(ligneObjectif)
     
     # on localise tous les murs
     # sur le layer ramassable    
@@ -107,13 +107,13 @@ def main():
     #-------------------------------
     # Rapport de ce qui est trouve sut la carte
     #-------------------------------
-    print("lecture carte")
-    print("-------------------------------------------")
-    print("lignes", nbLignes)
-    print("colonnes", nbCols)
-    print("Trouvé ", nbPlayers, " joueurs avec ", int(nbWalls/2), " murs chacun" )
-    print ("Init states:", initStates)
-    print("-------------------------------------------")
+    #print("lecture carte")
+    #print("-------------------------------------------")
+    #print("lignes", nbLignes)
+    #print("colonnes", nbCols)
+    #print("Trouvé ", nbPlayers, " joueurs avec ", int(nbWalls/2), " murs chacun" )
+    #print ("Init states:", initStates)
+    #print("-------------------------------------------")
 
     #-------------------------------
     # Carte demo 
@@ -128,11 +128,11 @@ def main():
     #-------------------------------
     
     allObjectifs = ([(ligneObjectif[0],i) for i in range(cMin,cMax)],[(ligneObjectif[1],i) for i in range(cMin,cMax)])
-    print("Tous les objectifs joueur 0", allObjectifs[0])
-    print("Tous les objectifs joueur 1", allObjectifs[1])
+    #print("Tous les objectifs joueur 0", allObjectifs[0])
+    #print("Tous les objectifs joueur 1", allObjectifs[1])
     objectifs =  [allObjectifs[0][random.randint(cMin,cMax-3)], allObjectifs[1][random.randint(cMin,cMax-3)]]
-    print("Objectif joueur 0 choisi au hasard", objectifs[0])
-    print("Objectif joueur 1 choisi au hasard", objectifs[1])
+    #print("Objectif joueur 0 choisi au hasard", objectifs[0])
+    #print("Objectif joueur 1 choisi au hasard", objectifs[1])
 
     #-------------------------------
     # Fonctions definissant les positions legales et placement de mur aléatoire
@@ -156,7 +156,7 @@ def main():
         p = ProblemeGrid2D(posPlayers[player],objectifs[player],g,'manhattan')
         path = probleme.astar(p,verbose=False)
 
-        print("IS OKAY PATH",path)
+        #print("IS OKAY PATH",path)
         
         return path[-1]==objectifs[player] and posPlayers[player] not in path[1:]
 
@@ -176,7 +176,7 @@ def main():
         # tire au hasard un couple de position permettant de placer un mur
         while True:
             wall_curr=wallStates(allWalls)
-            print("WALLL CURR",wall_curr)
+            #print("WALLL CURR",wall_curr)
             random_loc = (random.randint(lMin,lMax),random.randint(cMin,cMax))
             if legal_wall_position(random_loc, player, posPlayers,wall_curr):
                 wall_curr.append(random_loc) 
@@ -196,8 +196,9 @@ def main():
     def draw_wall_proche(player, posPlayers):
         # tire au hasard un couple de position permettant de placer un mur
         wall_curr=wallStates(allWalls)
-        print("WALLL CURR",wall_curr)
-        random_loc = (posPlayers[1 - player][0],posPlayers[1 - player][1]+1)
+        #print("WALLL CURR",wall_curr)
+        muravance=1 if player==1 else 0
+        random_loc = (posPlayers[1 - player][0],posPlayers[1 - player][1]+muravance)
         if legal_wall_position(random_loc, player, posPlayers,wall_curr):
             wall_curr.append(random_loc) 
             inc_pos =[(0,1),(0,-1),(1,0),(-1,0)] 
@@ -238,7 +239,7 @@ def main():
             g[i][nbLignes-2]=False
         p = ProblemeGrid2D(posPlayers[player],objectifs[player],g,'manhattan')
         path = probleme.astar(p,verbose=False)
-        print ("Chemin trouvé:", path)
+        #print ("Chemin trouvé:", path)
         return path
     
     def calcul_path_A_star_dynamique(player,posPlayers):
@@ -267,7 +268,7 @@ def main():
                 objectifs[player] = obj
             
         
-        print ("Chemin trouvé:", path_init)
+        #print ("Chemin trouvé:", path_init)
         return path_init
 
 
@@ -425,7 +426,7 @@ def main():
             
     posPlayers = initStates
 
-    print(iterations)
+    #print(iterations)
 
 
     walls_used=[0,0]
@@ -439,7 +440,7 @@ def main():
 
         # print("Le joueur actuel :",player)
         
-        end,gagnat = jouer_aleatoire(player, walls_used) if player == 0 else jouer_placer_mur_proche(player, walls_used)    
+        end,gagnat = jouer_aleatoire(player, walls_used) if alea == 0 else jouer_placer_mur_proche(player, walls_used)    
         if end:
             return gagnat
         
@@ -460,16 +461,22 @@ def main():
 from collections import Counter
 
 if __name__ == '__main__':
-    #gagnat = []
-    #for i in range(0,30):
-    #    gagnat.append(main())
-    #
-#
-    #count = Counter(gagnat)
-    #most_common_element = count.most_common(1)[0][0]
-    #print(most_common_element)
-
-    main()
+    gagnat = []
+    alea=0
+    for i in range(0,10):
+        gagnat.append(main())
+    count = Counter(gagnat)
+    most_common_element = count.most_common(1)[0][0]
+    print("Le gagnant de partie est ",most_common_element)
+    
+    gagnat = []
+    alea=1
+    for i in range(0,10):
+        gagnat.append(main())
+    count = Counter(gagnat)
+    most_common_element = count.most_common(1)[0][0]
+    print("Le gagnant de partie est ",most_common_element)
+    #main()
     
 
 
