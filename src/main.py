@@ -406,19 +406,121 @@ def main():
         return False, player
 
 
-    def placer_les_murs_intelligement(player):
+    def choisir_les_murs(player,positions):
         legal_walls=[]
         for i in range(lMin,lMax):
             for j in range(cMin,cMax):
                 voisins=[(0,1),(0,-1),(1,0),(-1,0)]
                 for v in voisins:
-                    if legal_wall_position((i,j), player, posPlayers,allWalls) and legal_wall_position((v[0]+i,v[1]+j), player, posPlayers,allWalls):
-                        if ((i,j),(i+v[0],j+v[1])) not in legal_walls:
-                            legal_walls.append((i,j),(i+v[0],j+v[1]))
+                    murs_actuel=wallStates(allWalls)
+                    if legal_wall_position((i,j), player, positions,murs_actuel):
+                        murs_actuel.append((i,j))
+                        if legal_wall_position((v[0]+i,v[1]+j), player, positions,murs_actuel):
+                            if ((i,j),(i+v[0],j+v[1])) not in legal_walls and ((i+v[0],j+v[1]),(i,j)) not in legal_walls :
+                                legal_walls.append(((i,j),(i+v[0],j+v[1])))
+        
+        return legal_walls
+    
+    def calcul_path_A_star_Mininimax(player,positions,Wall_curr):
+    
+        g =np.ones((nbLignes,nbCols),dtype=bool)  # une matrice remplie par defaut a True  
+        for w in Wall_curr:            # on met False quand murs
+            g[w]=False
+        for i in range(nbLignes):                 # on exclut aussi les bordures du plateau
+            g[0][i]=False
+            g[1][i]=False
+            g[nbLignes-1][i]=False
+            g[nbLignes-2][i]=False
+            g[i][0]=False
+            g[i][1]=False
+            g[i][nbLignes-1]=False
+            g[i][nbLignes-2]=False
+        p = ProblemeGrid2D(positions[player],objectifs[player],g,'manhattan')
+        path = probleme.astar(p,verbose=False)
+        #print ("Chemin trouvé:", path)
+        return path
+    
+    def decision(player,positions,Wall_curr):
+        list_murs=choisir_les_murs(player,positions)
+        meilleur_score=-1000
+        meilleur_coup=()
+        for i in range(0,len(list_murs)):
+            nouv_Wall_Curr=Wall_curr[:]
+            nouv_Wall_Curr.append(list_murs[i][0])
+            nouv_Wall_Curr.append(list_murs[i][1])
+            score_eval=minimax_placer_murs(player,positions,nouv_Wall_Curr,1)
+            if score_eval>meilleur_score:
+                meilleur_coup=(list_murs[i][0],list_murs[i][1])
+
+        return meilleur_coup
+
+    def minimax_placer_murs(player,positions,Wall_curr,racine):
+        if racine==0:
+            return len(calcul_path_A_star_Mininimax(player,positions,Wall_curr))-len(calcul_path_A_star_Mininimax(1-player,positions,Wall_curr))
+        list_murs=choisir_les_murs(player,positions)
+        if racine%2==0:
+            val=-1000
+            for mur in list_murs:
+                nouv_Wall_Curr=Wall_curr[:]
+                nouv_Wall_Curr.append(mur[0])
+                nouv_Wall_Curr.append(mur[1])
+                val=max(val,minimax_placer_murs(player,positions,nouv_Wall_Curr,racine-1))
+            
+            return val
+        
+        if racine%2==1:
+            val=1000
+            for mur in list_murs:
+                nouv_Wall_Curr=Wall_curr[:]
+                nouv_Wall_Curr.append(mur[0])
+                nouv_Wall_Curr.append(mur[1])
+                val=min(val,minimax_placer_murs(player,positions,nouv_Wall_Curr,racine-1))
+            
+            return val
+
+
+
 
         
-          
     
+    def jouer_minimax(player, walls_used):
+        """stratégie aléatoire avancée
+        
+        si le jouer est proche du cible on doit avancer et non pas constuire un mur aléatoirement
+        """
+
+        # calcul de la longeur du path pour les deux joeurs :
+        wall_curr=wallStates(allWalls)
+        position=posPlayers[player]
+        choix_du_jouer = 1 if len(calcul_path_A_star_Mininimax(player,posPlayers,wall_curr)) < len(calcul_path_A_star_Mininimax(1 - player,posPlayers,wall_curr)) else 0
+
+        if choix_du_jouer==0:
+            if walls_used[player]>=10 or position[0]<=3 or position[0]>=6:
+                choix_du_jouer=1
+            else:
+                wall_to_remplir=walls_used[player]
+                #wall_curr=wallStates(allWalls)
+                ((x1,y1),(x2,y2)) = decision(player,posPlayers,wall_curr)
+                walls[player][wall_to_remplir].set_rowcol(x1,y1)
+                walls[player][wall_to_remplir+1].set_rowcol(x2,y2)
+                walls_used[player]=walls_used[player]+2
+
+        
+        # on fait bouger le joueur 1 jusqu'à son but
+        # en suivant le chemin trouve avec A* 
+        if choix_du_jouer==1: #Il a choisi joueur
+            path=calcul_path_A_star(player,posPlayers)
+            row,col = path[1]
+            posPlayers[player]=(row,col)
+            players[player].set_rowcol(row,col)
+            #print ("pos joueur",player,":",row,col)
+            if (row,col) == objectifs[player]:
+                print("le joueur",player,"a atteint son but!")
+                return True, player
+            
+        return False, player
+
+            
     #-------------------------------
     # Boucle principale de déplacements 
     #-------------------------------
@@ -439,8 +541,8 @@ def main():
             player=1
 
         # print("Le joueur actuel :",player)
+        end,gagnat = jouer_aleatoire(player, walls_used) if player%2==alea else jouer_minimax(player, walls_used)
         
-        end,gagnat = jouer_aleatoire(player, walls_used) if alea == 0 else jouer_placer_mur_proche(player, walls_used)    
         if end:
             return gagnat
         
@@ -464,7 +566,7 @@ if __name__ == '__main__':
     gagnat = []
     alea=0
     for i in range(0,10):
-        gagnat.append(main())
+         gagnat.append(main())
     count = Counter(gagnat)
     most_common_element = count.most_common(1)[0][0]
     print("Le gagnant de partie est ",most_common_element)
@@ -472,11 +574,18 @@ if __name__ == '__main__':
     gagnat = []
     alea=1
     for i in range(0,10):
-        gagnat.append(main())
+         gagnat.append(main())
     count = Counter(gagnat)
     most_common_element = count.most_common(1)[0][0]
     print("Le gagnant de partie est ",most_common_element)
+
+    #alea=0
     #main()
+    
+
+
+    
+    
     
 
 
