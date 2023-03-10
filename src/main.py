@@ -541,7 +541,7 @@ def main():
             player=1
 
         # print("Le joueur actuel :",player)
-        end,gagnat = jouer_aleatoire(player, walls_used) if player%2==alea else jouer_minimax(player, walls_used)
+        end,gagnat = jouer_aleatoire(player, walls_used) if player%2==alea else jouer_objectif_proche(player, walls_used)
         
         if end:
             return gagnat
