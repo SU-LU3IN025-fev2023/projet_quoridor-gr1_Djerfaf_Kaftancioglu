@@ -448,7 +448,7 @@ def main():
             nouv_Wall_Curr=Wall_curr[:]
             nouv_Wall_Curr.append(list_murs[i][0])
             nouv_Wall_Curr.append(list_murs[i][1])
-            score_eval=minimax_placer_murs(player,positions,nouv_Wall_Curr,1)
+            score_eval=minimax_placer_murs(player,positions,nouv_Wall_Curr,2)
             if score_eval>meilleur_score:
                 meilleur_coup=(list_murs[i][0],list_murs[i][1])
 
@@ -509,7 +509,7 @@ def main():
         # on fait bouger le joueur 1 jusqu'à son but
         # en suivant le chemin trouve avec A* 
         if choix_du_jouer==1: #Il a choisi joueur
-            path=calcul_path_A_star(player,posPlayers)
+            path=calcul_path_A_star_dynamique(player,posPlayers)
             row,col = path[1]
             posPlayers[player]=(row,col)
             players[player].set_rowcol(row,col)
@@ -541,7 +541,7 @@ def main():
             player=1
 
         # print("Le joueur actuel :",player)
-        end,gagnat = jouer_aleatoire(player, walls_used) if player%2==alea else jouer_objectif_proche(player, walls_used)
+        end,gagnat = jouer_placer_mur_proche(player, walls_used) if player%2==alea else jouer_minimax(player, walls_used)
         
         if end:
             return gagnat
@@ -565,7 +565,7 @@ from collections import Counter
 if __name__ == '__main__':
     gagnat = []
     alea=0
-    for i in range(0,10):
+    for i in range(0,50):
          gagnat.append(main())
     count = Counter(gagnat)
     most_common_element = count.most_common(1)[0][0]
@@ -573,7 +573,7 @@ if __name__ == '__main__':
     
     gagnat = []
     alea=1
-    for i in range(0,10):
+    for i in range(0,50):
          gagnat.append(main())
     count = Counter(gagnat)
     most_common_element = count.most_common(1)[0][0]
