@@ -436,9 +436,16 @@ def main():
             g[i][nbLignes-1]=False
             g[i][nbLignes-2]=False
         p = ProblemeGrid2D(positions[player],objectifs[player],g,'manhattan')
-        path = probleme.astar(p,verbose=False)
+        path_init = probleme.astar(p,verbose=False)
         #print ("Chemin trouvé:", path)
-        return path
+
+        for obj in allObjectifs[player]:
+            p = ProblemeGrid2D(posPlayers[player],obj,g,'manhattan')
+            path_dynamique = probleme.astar(p,verbose=False)
+            if len(path_dynamique) < len(path_init):
+                path_init = path_dynamique
+                objectifs[player] = obj
+        return path_init
     
     def decision(player,positions,Wall_curr):
         list_murs=choisir_les_murs(player,positions)
