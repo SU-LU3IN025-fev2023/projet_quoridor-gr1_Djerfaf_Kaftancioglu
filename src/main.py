@@ -103,6 +103,9 @@ def main():
         # donne la liste des coordonnees dez joueurs
         return [p.get_rowcol() for p in players]
     
+    def is_between(x,y,z):
+        return (x>=y and x<=z) or (x>=z and x<=y)
+    
    
     #-------------------------------
     # Rapport de ce qui est trouve sut la carte
@@ -417,7 +420,8 @@ def main():
                         murs_actuel.append((i,j))
                         if legal_wall_position((v[0]+i,v[1]+j), player, positions,murs_actuel):
                             if ((i,j),(i+v[0],j+v[1])) not in legal_walls and ((i+v[0],j+v[1]),(i,j)) not in legal_walls :
-                                legal_walls.append(((i,j),(i+v[0],j+v[1])))
+                                if(is_between(i,posPlayers[1-player][0],objectifs[1-player][0]) and is_between(j,posPlayers[1-player][1],objectifs[1-player][1])):
+                                    legal_walls.append(((i,j),(i+v[0],j+v[1])))
         
         return legal_walls
     
@@ -447,41 +451,41 @@ def main():
                 objectifs[player] = obj
         return path_init
     
-    def decision(player,positions,Wall_curr):
+    def decision_minimax(player,positions,Wall_curr,horizon):
         list_murs=choisir_les_murs(player,positions)
         meilleur_score=-1000
-        meilleur_coup=()
+        meilleur_coup=draw_random_wall_location(player,posPlayers)
         for i in range(0,len(list_murs)):
             nouv_Wall_Curr=Wall_curr[:]
             nouv_Wall_Curr.append(list_murs[i][0])
             nouv_Wall_Curr.append(list_murs[i][1])
-            score_eval=minimax_placer_murs(player,positions,nouv_Wall_Curr,2)
+            score_eval=minimax_placer_murs(player,positions,nouv_Wall_Curr,horizon)
             if score_eval>meilleur_score:
                 meilleur_coup=(list_murs[i][0],list_murs[i][1])
 
         return meilleur_coup
 
-    def minimax_placer_murs(player,positions,Wall_curr,racine):
-        if racine==0:
-            return len(calcul_path_A_star_Mininimax(player,positions,Wall_curr))-len(calcul_path_A_star_Mininimax(1-player,positions,Wall_curr))
+    def minimax_placer_murs(player,positions,Wall_curr,horizon):
+        if horizon==1:
+            return len(calcul_path_A_star_Mininimax(1-player,positions,Wall_curr))-len(calcul_path_A_star_Mininimax(player,positions,Wall_curr))
         list_murs=choisir_les_murs(player,positions)
-        if racine%2==0:
+        if horizon%2==1:
             val=-1000
             for mur in list_murs:
                 nouv_Wall_Curr=Wall_curr[:]
                 nouv_Wall_Curr.append(mur[0])
                 nouv_Wall_Curr.append(mur[1])
-                val=max(val,minimax_placer_murs(player,positions,nouv_Wall_Curr,racine-1))
+                val=max(val,minimax_placer_murs(player,positions,nouv_Wall_Curr,horizon-1))
             
             return val
         
-        if racine%2==1:
+        if horizon%2==0:
             val=1000
             for mur in list_murs:
                 nouv_Wall_Curr=Wall_curr[:]
                 nouv_Wall_Curr.append(mur[0])
                 nouv_Wall_Curr.append(mur[1])
-                val=min(val,minimax_placer_murs(player,positions,nouv_Wall_Curr,racine-1))
+                val=min(val,minimax_placer_murs(player,positions,nouv_Wall_Curr,horizon-1))
             
             return val
 
@@ -490,7 +494,7 @@ def main():
 
         
     
-    def jouer_minimax(player, walls_used):
+    def jouer_minimax(player, walls_used,horizon):
         """stratégie aléatoire avancée
         
         si le jouer est proche du cible on doit avancer et non pas constuire un mur aléatoirement
@@ -507,7 +511,7 @@ def main():
             else:
                 wall_to_remplir=walls_used[player]
                 #wall_curr=wallStates(allWalls)
-                ((x1,y1),(x2,y2)) = decision(player,posPlayers,wall_curr)
+                ((x1,y1),(x2,y2)) = decision_minimax(player,posPlayers,wall_curr,horizon)
                 walls[player][wall_to_remplir].set_rowcol(x1,y1)
                 walls[player][wall_to_remplir+1].set_rowcol(x2,y2)
                 walls_used[player]=walls_used[player]+2
@@ -548,7 +552,7 @@ def main():
             player=1
 
         # print("Le joueur actuel :",player)
-        end,gagnat = jouer_placer_mur_proche(player, walls_used) if player%2==alea else jouer_minimax(player, walls_used)
+        end,gagnat = jouer_placer_mur_proche(player, walls_used) if player%2==alea else jouer_minimax(player, walls_used,3)
         
         if end:
             return gagnat
@@ -586,8 +590,8 @@ if __name__ == '__main__':
     most_common_element = count.most_common(1)[0][0]
     print("Le gagnant de partie est ",most_common_element)
 
-    #alea=0
-    #main()
+    # alea=0
+    # main()
     
 
 
