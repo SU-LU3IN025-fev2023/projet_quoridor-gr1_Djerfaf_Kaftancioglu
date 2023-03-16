@@ -503,7 +503,14 @@ def main():
         # calcul de la longeur du path pour les deux joeurs :
         wall_curr=wallStates(allWalls)
         position=posPlayers[player]
-        choix_du_jouer = 1 if len(calcul_path_A_star_Mininimax(player,posPlayers,wall_curr)) < len(calcul_path_A_star_Mininimax(1 - player,posPlayers,wall_curr)) else 0
+        lng_joueur=len(calcul_path_A_star_Mininimax(player,posPlayers,wall_curr))
+        lng_adv=len(calcul_path_A_star_Mininimax(1 - player,posPlayers,wall_curr))
+        if lng_joueur<2:
+            return 100
+        
+        if lng_adv<2:
+            return -100
+        choix_du_jouer = 1 if lng_joueur < lng_adv else 0
 
         if choix_du_jouer==0:
             if walls_used[player]>=10 or position[0]<=3 or position[0]>=6:
