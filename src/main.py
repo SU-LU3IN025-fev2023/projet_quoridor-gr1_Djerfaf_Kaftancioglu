@@ -537,6 +537,101 @@ def main():
                 return True, player
             
         return False, player
+    
+
+    ###################################################################################################################
+    def decision_alpha_beta(player,positions,Wall_curr,horizon):
+        list_murs=choisir_les_murs(player,positions)
+        meilleur_score=-1000
+        meilleur_coup=draw_random_wall_location(player,posPlayers)
+        for i in range(0,len(list_murs)):
+            nouv_Wall_Curr=Wall_curr[:]
+            nouv_Wall_Curr.append(list_murs[i][0])
+            nouv_Wall_Curr.append(list_murs[i][1])
+            score_eval=alpha_beta_placer_murs(player,positions,nouv_Wall_Curr,horizon)
+            if score_eval>meilleur_score:
+                meilleur_coup=(list_murs[i][0],list_murs[i][1])
+
+        return meilleur_coup
+
+    def alpha_beta_placer_murs(player,positions,Wall_curr,horizon,alpha=-1000,beta=1000):
+        if horizon==1:
+            return len(calcul_path_A_star_Mininimax(1-player,positions,Wall_curr))-len(calcul_path_A_star_Mininimax(player,positions,Wall_curr))
+        list_murs=choisir_les_murs(player,positions)
+        if horizon%2==1:
+            val=-1000
+            for mur in list_murs:
+                nouv_Wall_Curr=Wall_curr[:]
+                nouv_Wall_Curr.append(mur[0])
+                nouv_Wall_Curr.append(mur[1])
+                val=max(val,minimax_placer_murs(player,positions,nouv_Wall_Curr,horizon-1))
+                if val >=beta:
+                    break
+                alpha=max(alpha,val)
+            
+            return val
+        
+        if horizon%2==0:
+            val=1000
+            for mur in list_murs:
+                nouv_Wall_Curr=Wall_curr[:]
+                nouv_Wall_Curr.append(mur[0])
+                nouv_Wall_Curr.append(mur[1])
+                val=min(val,minimax_placer_murs(player,positions,nouv_Wall_Curr,horizon-1))
+                if val <=alpha:
+                    break
+                beta=min(beta,val)
+            
+            return val
+
+
+
+
+        
+    
+    def jouer_alpha_beta(player, walls_used,horizon):
+        """stratégie aléatoire avancée
+        
+        si le jouer est proche du cible on doit avancer et non pas constuire un mur aléatoirement
+        """
+
+        # calcul de la longeur du path pour les deux joeurs :
+        wall_curr=wallStates(allWalls)
+        position=posPlayers[player]
+        lng_joueur=len(calcul_path_A_star_Mininimax(player,posPlayers,wall_curr))
+        lng_adv=len(calcul_path_A_star_Mininimax(1 - player,posPlayers,wall_curr))
+        if lng_joueur<2:
+            return 100
+        
+        if lng_adv<2:
+            return -100
+        choix_du_jouer = 1 if lng_joueur < lng_adv else 0
+
+        if choix_du_jouer==0:
+            if walls_used[player]>=10 or position[0]<=3 or position[0]>=6:
+                choix_du_jouer=1
+            else:
+                wall_to_remplir=walls_used[player]
+                #wall_curr=wallStates(allWalls)
+                ((x1,y1),(x2,y2)) = decision_alpha_beta(player,posPlayers,wall_curr,horizon)
+                walls[player][wall_to_remplir].set_rowcol(x1,y1)
+                walls[player][wall_to_remplir+1].set_rowcol(x2,y2)
+                walls_used[player]=walls_used[player]+2
+
+        
+        # on fait bouger le joueur 1 jusqu'à son but
+        # en suivant le chemin trouve avec A* 
+        if choix_du_jouer==1: #Il a choisi joueur
+            path=calcul_path_A_star_dynamique(player,posPlayers)
+            row,col = path[1]
+            posPlayers[player]=(row,col)
+            players[player].set_rowcol(row,col)
+            #print ("pos joueur",player,":",row,col)
+            if (row,col) == objectifs[player]:
+                print("le joueur",player,"a atteint son but!")
+                return True, player
+            
+        return False, player
 
             
     #-------------------------------
@@ -559,7 +654,7 @@ def main():
             player=1
 
         # print("Le joueur actuel :",player)
-        end,gagnat = jouer_placer_mur_proche(player, walls_used) if player%2==alea else jouer_minimax(player, walls_used,4)
+        end,gagnat = jouer_placer_mur_proche(player, walls_used) if player%2==alea else jouer_alpha_beta(player, walls_used,4)
         
         if end:
             return gagnat
