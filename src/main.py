@@ -552,7 +552,7 @@ def main():
             player=1
 
         # print("Le joueur actuel :",player)
-        end,gagnat = jouer_placer_mur_proche(player, walls_used) if player%2==alea else jouer_minimax(player, walls_used,3)
+        end,gagnat = jouer_placer_mur_proche(player, walls_used) if player%2==alea else jouer_minimax(player, walls_used,4)
         
         if end:
             return gagnat
@@ -580,7 +580,9 @@ if __name__ == '__main__':
          gagnat.append(main())
     count = Counter(gagnat)
     most_common_element = count.most_common(1)[0][0]
+    cpt=count.most_common(1)[0][1]
     print("Le gagnant de partie est ",most_common_element)
+    print("Il a gagné ",cpt," jeu.")
     
     gagnat = []
     alea=1
@@ -588,7 +590,9 @@ if __name__ == '__main__':
          gagnat.append(main())
     count = Counter(gagnat)
     most_common_element = count.most_common(1)[0][0]
+    cpt=count.most_common(1)[0][1]
     print("Le gagnant de partie est ",most_common_element)
+    print("Il a gagné ",cpt," jeu.")
 
     # alea=0
     # main()
