@@ -43,8 +43,88 @@ def init(_boardname=None):
     game.fps = 5  # frames per second
     game.mainiteration()
     player = game.player
+
+import tkinter as tk
+
+
+def welcome_frame():
+
+
+    # create a window
+    # Création de la fenêtre principale
+    root = tk.Tk()
+    root.title("Quridor")
+    root.geometry("500x400")
+
+    # Titre principal
+    title = tk.Label(root, text="WELCOME to Quridor", font=("Arial", 24))
+    title.pack(pady=20)
+
+    # Texte et boutons pour la sélection de la stratégie du joueur 1
+    label_strat1 = tk.Label(root, text="Select the Strategy for Player 1 :")
+    label_strat1.pack()
+    strat1 = tk.StringVar()
+    strat1.set("Strat 1")  # Stratégie par défaut
+    strat1_buttons = tk.Frame(root)
+    strat1_buttons.pack()
+    for i in range(1, 8):
+        button = tk.Radiobutton(strat1_buttons, text="Strat " +
+                                str(i), variable=strat1, value="Strat " + str(i))
+        button.pack(side="left")
+
+    # Texte et boutons pour la sélection de la stratégie du joueur 2
+    label_strat2 = tk.Label(root, text="Select the Strategy for Player 2 :")
+    label_strat2.pack()
+    strat2 = tk.StringVar()
+    strat2.set("Strat 1")  # Stratégie par défaut
+    strat2_buttons = tk.Frame(root)
+    strat2_buttons.pack()
+    for i in range(1, 8):
+        button = tk.Radiobutton(strat2_buttons, text="Strat " +
+                                str(i), variable=strat2, value="Strat " + str(i))
+        button.pack(side="left")
+
+    # texte et bouton pour la sélection du nombre d'itérations
+    label_iter = tk.Label(root, text="Select the number of iterations :")
+    label_iter.pack()
+    iter = tk.StringVar()
+    iter.set("10")  # 10 itérations par défaut
+    iter_buttons = tk.Frame(root)
+    iter_buttons.pack()
+    for i in range(10, 31, 5):
+        button = tk.Radiobutton(iter_buttons, text=str(i),
+                                variable=iter, value=str(i))
+        button.pack(side="left")
     
-def main():
+
+    
+    # Bouton pour lancer la partie
+    button = tk.Button(root, text="Let the GAME Begins", command=root.destroy)
+    button.pack(pady=20)
+
+    # Affichage de la fenêtre
+    root.mainloop()
+    
+
+    # Récupération des valeurs sélectionnées
+    st1 = strat1.get()
+    st2 = strat2.get()
+    itr = iter.get()
+
+
+    # Affichage des valeurs sélectionnées
+    print(st1)
+    print(st2)
+    print(itr)
+
+    
+
+    return st1, st2, itr
+
+
+
+
+def main(str1, str2):
 
     #for arg in sys.argv:
     iterations = 100 # default
@@ -637,7 +717,23 @@ def main():
     #-------------------------------
     # Boucle principale de déplacements 
     #-------------------------------
-    
+    def perform(strategy):
+        if strategy == 'Strat 1':
+            return jouer_aleatoire(player, walls_used)
+        elif strategy == 'Strat 2':
+            return jouer_aleatoire_avance(player, walls_used)
+        elif strategy == 'Strat 3':
+            return jouer_objectif_proche(player, walls_used)
+        elif strategy == 'Strat 4':
+            return jouer_placer_mur_proche(player, walls_used)
+        elif strategy == 'Strat 5':
+            return jouer_minimax(player, walls_used, 4)
+        elif strategy == 'Strat 6':
+            return jouer_alpha_beta(player, walls_used, 5)
+        else:
+            return jouer_alpha_beta(player, walls_used, 4)
+        
+        
             
     posPlayers = initStates
 
@@ -654,7 +750,7 @@ def main():
             player=1
 
         # print("Le joueur actuel :",player)
-        end,gagnat = jouer_placer_mur_proche(player, walls_used) if player%2==alea else jouer_alpha_beta(player, walls_used,4)
+        end,gagnat = perform(str1) if player%2==0 else perform(str2)
         
         if end:
             return gagnat
@@ -676,25 +772,31 @@ def main():
 from collections import Counter
 
 if __name__ == '__main__':
+
+    # appeler la fonction welcome_frame() pour afficher la fenetre de bienvenue
+    # et que l'utilisateur choisisse le nombre de parties à jouer
+    # ainsi que les stratégies des joueurs
+    str1, str2, itr = welcome_frame()
+
     gagnat = []
     alea=0
-    for i in range(0,50):
-         gagnat.append(main())
+    for i in range(0,int(itr)):
+         gagnat.append(main(str1,str2))
     count = Counter(gagnat)
     most_common_element = count.most_common(1)[0][0]
     cpt=count.most_common(1)[0][1]
     print("Le gagnant de partie est ",most_common_element)
     print("Il a gagné ",cpt," jeu.")
     
-    gagnat = []
-    alea=1
-    for i in range(0,50):
-         gagnat.append(main())
-    count = Counter(gagnat)
-    most_common_element = count.most_common(1)[0][0]
-    cpt=count.most_common(1)[0][1]
-    print("Le gagnant de partie est ",most_common_element)
-    print("Il a gagné ",cpt," jeu.")
+    # gagnat = []
+    # alea=1
+    # for i in range(0,50):
+    #      gagnat.append(main())
+    # count = Counter(gagnat)
+    # most_common_element = count.most_common(1)[0][0]
+    # cpt=count.most_common(1)[0][1]
+    # print("Le gagnant de partie est ",most_common_element)
+    # print("Il a gagné ",cpt," jeu.")
 
     # alea=0
     # main()
