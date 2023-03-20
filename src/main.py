@@ -546,10 +546,12 @@ def main(str1, str2):
         return meilleur_coup
 
     def minimax_placer_murs(player,positions,Wall_curr,horizon):
+        lng_joueur=len(calcul_path_A_star_Mininimax(player,posPlayers,Wall_curr))
+        lng_adv=len(calcul_path_A_star_Mininimax(1 - player,posPlayers,Wall_curr))
         if horizon==1:
-            return len(calcul_path_A_star_Mininimax(1-player,positions,Wall_curr))-len(calcul_path_A_star_Mininimax(player,positions,Wall_curr))
-        list_murs=choisir_les_murs(player,positions)
+            return lng_adv-lng_joueur
         if horizon%2==1:
+            list_murs=choisir_les_murs(player,positions)
             val=-1000
             for mur in list_murs:
                 nouv_Wall_Curr=Wall_curr[:]
@@ -560,6 +562,7 @@ def main(str1, str2):
             return val
         
         if horizon%2==0:
+            list_murs=choisir_les_murs(1-player,positions)
             val=1000
             for mur in list_murs:
                 nouv_Wall_Curr=Wall_curr[:]
@@ -593,7 +596,7 @@ def main(str1, str2):
         choix_du_jouer = 1 if lng_joueur < lng_adv else 0
 
         if choix_du_jouer==0:
-            if walls_used[player]>=10 or position[0]<=3 or position[0]>=6:
+            if walls_used[player]>=10 or position[0]<=4 or position[0]>=6:
                 choix_du_jouer=1
             else:
                 wall_to_remplir=walls_used[player]
@@ -635,16 +638,19 @@ def main(str1, str2):
         return meilleur_coup
 
     def alpha_beta_placer_murs(player,positions,Wall_curr,horizon,alpha=-1000,beta=1000):
+        lng_joueur=len(calcul_path_A_star_Mininimax(player,posPlayers,Wall_curr))
+        lng_adv=len(calcul_path_A_star_Mininimax(1 - player,posPlayers,Wall_curr))
         if horizon==1:
-            return len(calcul_path_A_star_Mininimax(1-player,positions,Wall_curr))-len(calcul_path_A_star_Mininimax(player,positions,Wall_curr))
-        list_murs=choisir_les_murs(player,positions)
+            return lng_adv-lng_joueur
+        
         if horizon%2==1:
             val=-1000
+            list_murs=choisir_les_murs(player,positions)
             for mur in list_murs:
                 nouv_Wall_Curr=Wall_curr[:]
                 nouv_Wall_Curr.append(mur[0])
                 nouv_Wall_Curr.append(mur[1])
-                val=max(val,minimax_placer_murs(player,positions,nouv_Wall_Curr,horizon-1))
+                val=max(val,alpha_beta_placer_murs(player,positions,nouv_Wall_Curr,horizon-1))
                 if val >=beta:
                     break
                 alpha=max(alpha,val)
@@ -653,11 +659,12 @@ def main(str1, str2):
         
         if horizon%2==0:
             val=1000
+            list_murs=choisir_les_murs(1-player,positions)
             for mur in list_murs:
                 nouv_Wall_Curr=Wall_curr[:]
                 nouv_Wall_Curr.append(mur[0])
                 nouv_Wall_Curr.append(mur[1])
-                val=min(val,minimax_placer_murs(player,positions,nouv_Wall_Curr,horizon-1))
+                val=min(val,alpha_beta_placer_murs(player,positions,nouv_Wall_Curr,horizon-1))
                 if val <=alpha:
                     break
                 beta=min(beta,val)
@@ -688,7 +695,7 @@ def main(str1, str2):
         choix_du_jouer = 1 if lng_joueur < lng_adv else 0
 
         if choix_du_jouer==0:
-            if walls_used[player]>=10 or position[0]<=3 or position[0]>=6:
+            if walls_used[player]>=10 or position[0]<=4 or position[0]>=6:
                 choix_du_jouer=1
             else:
                 wall_to_remplir=walls_used[player]
@@ -727,9 +734,9 @@ def main(str1, str2):
         elif strategy == 'Strat 4':
             return jouer_placer_mur_proche(player, walls_used)
         elif strategy == 'Strat 5':
-            return jouer_minimax(player, walls_used, 4)
+            return jouer_minimax(player, walls_used, 3)
         elif strategy == 'Strat 6':
-            return jouer_alpha_beta(player, walls_used, 5)
+            return jouer_alpha_beta(player, walls_used, 4)
         else:
             return jouer_alpha_beta(player, walls_used, 4)
         
