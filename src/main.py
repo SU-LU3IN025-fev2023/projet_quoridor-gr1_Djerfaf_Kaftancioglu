@@ -771,7 +771,6 @@ def main(str1, str2):
 
     def decision_monaco(player,positions,Wall_curr,walls_used,horizon):
         list_murs=choisir_les_murs_monaco(player,positions,Wall_curr)
-        print(list_murs)
         meilleur_score=-1000
         meilleur_coup=draw_random_wall_location(player,posPlayers)
         for i in range(0,len(list_murs)):
@@ -787,7 +786,6 @@ def main(str1, str2):
 
     def monaco_placer_murs(player,positions,Wall_curr,walls_used,horizon,horizon_init,alpha=-1000,beta=1000):
         if horizon==1:
-            print("ICI")
             if horizon_init%2==1:
                 nbwin=0
                 for k in range(10):
@@ -909,7 +907,7 @@ def main(str1, str2):
         elif strategy == 'Strat 5':
             return jouer_minimax(player, walls_used, 3)
         elif strategy == 'Strat 6':
-            return jouer_alpha_beta(player, walls_used,5)
+            return jouer_alpha_beta(player, walls_used,4)
         else:
             return jouer_monaco(player, walls_used,1)
         
