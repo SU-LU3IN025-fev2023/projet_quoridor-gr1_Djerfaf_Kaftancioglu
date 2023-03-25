@@ -45,79 +45,115 @@ def init(_boardname=None):
     player = game.player
 
 import tkinter as tk
-
-
 def welcome_frame():
+    def show_strategies():
+
+        strategies_window = tk.Toplevel(root)
+        strategies_window.title("Stratégies")
+
+        strat = tk.Label(strategies_window, text="Stratégies :",
+                         font=("Arial", 18))
+        strat.pack(pady=20)
+
+        strat1 = tk.Label(strategies_window, text="Strat 1 : Jouer aléatoirement", font=(
+            "Arial", 8))
+        strat1.pack(pady=20)
+
+        strat2 = tk.Label(strategies_window, text="Strat 2 : Jouer aléatoirement avancé", font=(
+            "Arial", 8))
+        strat2.pack(pady=20)
+
+        strat3 = tk.Label(strategies_window, text="Strat 3 : Jouer placer mur proche du joueur adverse", font=(
+            "Arial", 8))
+        strat3.pack(pady=20)
+
+        strat4 = tk.Label(strategies_window, text="Strat 4 : Jouer en empêchant le joueur adverse d'avancer", font=(
+            "Arial", 8))
+        strat4.pack(pady=20)
+
+        strat5 = tk.Label(strategies_window, text="Strat 5 : Jouer MiniMax", font=(
+            "Arial", 8))
+        strat5.pack(pady=20)
+
+        strat6 = tk.Label(strategies_window, text="Strat 6 : Jouer MiniMax avec élagage alpha-beta",
+                          font=("Arial", 8))
+        strat6.pack(pady=20)
+
+        strat7 = tk.Label(strategies_window, text="Strat 7 : Jouer Monte Carlo", font=(
+            "Arial", 8))
+        strat7.pack(pady=20)
+
 
 
     # create a window
-    # Création de la fenêtre principale
     root = tk.Tk()
     root.title("Quridor")
     root.geometry("500x400")
+    root.configure(bg='#D04648')  # Set background color
 
     # Titre principal
-    title = tk.Label(root, text="WELCOME to Quridor", font=("Arial", 24))
+    title = tk.Label(root, text="WELCOME to Quridor", font=("Arial", 24), bg='#D04648', fg='white')
     title.pack(pady=20)
 
     # Texte et boutons pour la sélection de la stratégie du joueur 1
-    label_strat1 = tk.Label(root, text="Select the Strategy for Player 1 :")
+    label_strat1 = tk.Label(root, text="Select the Strategy for Player 0 :", bg='#D04648', fg='white')
     label_strat1.pack()
     strat1 = tk.StringVar()
     strat1.set("Strat 1")  # Stratégie par défaut
-    strat1_buttons = tk.Frame(root)
+    strat1_buttons = tk.Frame(root, bg='#D04648')
     strat1_buttons.pack()
     for i in range(1, 8):
-        button = tk.Radiobutton(strat1_buttons, text="Strat " +
-                                str(i), variable=strat1, value="Strat " + str(i))
+        button = tk.Radiobutton(strat1_buttons, text="Strat " + str(i), variable=strat1, value="Strat " + str(i),
+                                bg='#D04648', fg='black', activebackground='#D04648', activeforeground='white')
         button.pack(side="left")
 
     # Texte et boutons pour la sélection de la stratégie du joueur 2
-    label_strat2 = tk.Label(root, text="Select the Strategy for Player 2 :")
+    label_strat2 = tk.Label(root, text="Select the Strategy for Player 1 :", bg='#D04648', fg='white')
     label_strat2.pack()
     strat2 = tk.StringVar()
     strat2.set("Strat 1")  # Stratégie par défaut
-    strat2_buttons = tk.Frame(root)
+    strat2_buttons = tk.Frame(root, bg='#D04648')
     strat2_buttons.pack()
     for i in range(1, 8):
-        button = tk.Radiobutton(strat2_buttons, text="Strat " +
-                                str(i), variable=strat2, value="Strat " + str(i))
+        button = tk.Radiobutton(strat2_buttons, text="Strat " + str(i), variable=strat2, value="Strat " + str(i),
+                                bg='#D04648', fg='black', activebackground='#D04648', activeforeground='white')
         button.pack(side="left")
 
     # texte et bouton pour la sélection du nombre d'itérations
-    label_iter = tk.Label(root, text="Select the number of iterations :")
+    label_iter = tk.Label(root, text="Select the number of iterations :", bg='#D04648', fg='white')
     label_iter.pack()
     iter = tk.StringVar()
     iter.set("10")  # 10 itérations par défaut
-    iter_buttons = tk.Frame(root)
+    iter_buttons = tk.Frame(root, bg='#D04648')
     iter_buttons.pack()
-    for i in range(10, 31, 5):
-        button = tk.Radiobutton(iter_buttons, text=str(i),
-                                variable=iter, value=str(i))
+    for i in [1,5,15,30]:
+        button = tk.Radiobutton(iter_buttons, text=str(i), variable=iter, value=str(i),
+                                bg='#D04648', fg='black', activebackground='#D04648', activeforeground='white')
         button.pack(side="left")
-    
 
-    
+    strategies_button = tk.Button(
+        root, text="Stratégie infos !", command=show_strategies)
+    strategies_button.pack(pady=20)
+
     # Bouton pour lancer la partie
-    button = tk.Button(root, text="Let the GAME Begins", command=root.destroy)
+    button = tk.Button(root, text="Let the GAME Begins",
+                       command=root.destroy, bg='#6DAA2C', fg='white')
     button.pack(pady=20)
 
+    
+    
     # Affichage de la fenêtre
     root.mainloop()
-    
 
     # Récupération des valeurs sélectionnées
     st1 = strat1.get()
     st2 = strat2.get()
     itr = iter.get()
 
-
     # Affichage des valeurs sélectionnées
     print(st1)
     print(st2)
     print(itr)
-
-    
 
     return st1, st2, itr
 
@@ -961,28 +997,83 @@ if __name__ == '__main__':
     for i in range(0,int(itr)):
          gagnat.append(main(str1,str2))
     count = Counter(gagnat)
+    print(gagnat)
     most_common_element = count.most_common(1)[0][0]
     cpt=count.most_common(1)[0][1]
     print("Le gagnant de partie est ",most_common_element)
     print("Il a gagné ",cpt," jeu.")
-    
-    # gagnat = []
-    # alea=1
-    # for i in range(0,50):
-    #      gagnat.append(main())
-    # count = Counter(gagnat)
-    # most_common_element = count.most_common(1)[0][0]
-    # cpt=count.most_common(1)[0][1]
-    # print("Le gagnant de partie est ",most_common_element)
-    # print("Il a gagné ",cpt," jeu.")
 
-    # alea=0
-    # main()
-    
+    # afficher le résultat
+    import matplotlib.pyplot as plt
+
+    # Liste des résultats
+    l = gagnat
+
+    # affichage du gagnant au cours du temps
+    # Création d'une nouvelle figure pour le deuxième graphe
+    fig2, ax2 = plt.subplots()
+    winners = []
+
+    for i, val in enumerate(l):
+        winner = "Joueur 1" if val == 1 else "Joueur 0"
+        winners.append(winner)
+        plt.plot(range(i+1), winners)
+        plt.title("Gagnant au cours du temps")
+        plt.xlabel("Partie")
+        plt.ylabel("Gagnant")
+    plt.show()
+
+    # enregistrement du plot dans un fichier
+    fig2.savefig('images/resultat2.png')
+
+    # Comptage des occurrences de 0 et de 1 dans la liste
+    n0 = l.count(0)
+    n1 = l.count(1)
+
+    # Création de la figure
+    fig, ax = plt.subplots()
+
+    # Tracé des barres pour chaque occurrence
+    ax.bar([0, 1], [n0, n1])
+
+    # Ajout des labels sur l'axe des x
+    ax.set_xticks([0, 1])
+    ax.set_xticklabels(['0', '1'])
+
+    # Ajout des labels sur l'axe des y
+    ax.set_ylabel('Nombre de victoires')
+
+    # Ajout d'un titre
+    ax.set_title('Résultat des parties')
 
 
-    
+    # Affichage de la figure
+    plt.show()
+
+    # enregistrement du plot dans un fichier
+    fig.savefig('images/resultat1.png')
     
     
 
+    # # creer une nouvelle feneêtre pour afficher le résultat
+    # root = tk.Tk()
+    # root.title("Resultat")
+    # root.geometry("800x800")
+    # root.configure(background='white')
+    # from PIL import ImageTk, Image
+    # # afficher le résultat
+    # # affichage de la 1ere photo
+    # img1 = ImageTk.PhotoImage(Image.open("images/resultat2.png"))
+    # panel1 = tk.Label(root, image=img1)
+    # panel1.pack(side="top", fill="both", expand="yes")
+
+    # # affichage de la 2eme photo
+    # img2 = ImageTk.PhotoImage(Image.open("images/resultat1.png"))
+    # panel2 = tk.Label(root, image=img2)
+    # panel2.pack(side="bottom", fill="both", expand="yes")
+
+    # # positionner la deuxième photo juste après la première photo
+    # panel2.pack(side="top", fill="both", expand="yes")
+
+    # root.mainloop()
 

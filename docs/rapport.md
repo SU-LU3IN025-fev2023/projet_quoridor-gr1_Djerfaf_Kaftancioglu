@@ -2,16 +2,13 @@
 # Rapport de projet
 
 ## Groupe
-* Baris Kaftancioglu 28711733
-* Ilyes Djerfaf 
 
-## Description des choix importants d'implémentation
+* **Baris Kaftancioglu 28711733**
+* **Ilyes Djerfaf 21215141**
 
-Blablabla
+## **Description des choix importants d'implémentation**
 
-## Description des stratégies proposées
-
-### Minimax
+### **Minimax**
 
 Le minimax est un algorithme utilisé dans la théorie des jeux pour déterminer la meilleure stratégie à adopter pour un joueur dans un jeu à deux joueurs à somme nulle, c'est-à-dire un jeu où les gains d'un joueur sont les pertes de l'autre joueur et vice versa.
 
@@ -21,7 +18,7 @@ Le joueur cherche à maximiser son score de l'évaluation, tandis que l'adversai
 
 À partir de l'état actuel du jeu, l'algorithme minimax examine toutes les possibilités de remplacements des murs possibles jusqu'à un certain niveau de profondeur(horizon), et retourne le meilleur mouvement possible à effectuer pour le joueur.
 
-### Alpha-Beta
+### **Alpha-Beta**
 
 L'algorithme Alpha-Beta est une extension de l'algorithme Minimax utilisé dans les jeux à deux joueurs avec un arbre de recherche de décision. L'algorithme Alpha-Beta vise à réduire le nombre de nœuds évalués par l'algorithme Minimax en élaguant certaines branches de l'arbre qui ne sont pas pertinentes pour la décision finale.
 
@@ -31,10 +28,11 @@ Lorsque l'algorithme atteint un nœud Max, il met à jour la valeur alpha avec l
 
 L'utilisation de alpha et beta pour élaguer les branches de l'arbre permet de réduire considérablement le nombre de nœuds évalués par l'algorithme Minimax, ce qui permet une meilleure performance de l'algorithme et une prise de décision plus rapide.
 
-
-### MCSTS (Monte Carlo Tree Search with Supervised learning)
+### **MCSTS (Monte Carlo Tree Search with Supervised learning)**
 
 Le principe de base de MCSTS est de construire un arbre de recherche de décision à partir d'un état initial en utilisant MCTS. Cet arbre est alors utilisé pour générer des exemples d'entraînement pour un modèle d'apprentissage supervisé. Le modèle est ensuite utilisé pour prédire les résultats des actions possibles à partir de chaque état.Il fait tourner 10 match entre 2 joueurs aléatoires à partir de l'état actuel.
+
+## **Description des stratégies proposées**
 
 ### - Strat 1
 
@@ -52,23 +50,28 @@ Si le joeur est plus proche à so onbjectif, il s'avance dans son path.
 Il change son objectif afin d'avoir l'objectif le plus proche.
 
 ### - Strat 4
+
 Ce joueur essaie de mettre les murs dans un façon rendre plus loin l'objectif de son adversaire que celui d'avant mettre les murs.
 Si le joueur est plus proche à sn ojectif que son adversaire, il s'avance dans son path.
 
 ### - Strat 5
+
 Ce joueur s'applique l'algorithme minimax afin de trouver configuration possible qui augmente la distance de l'adversaire et  objectif de l'adversaire et minimise la distance entre lui-même et son ojectif.
 Si le joueur est plus proche à son objectif, il s'avance dans son path.
 
 ### - Strat 6
+
 Ce joueur s'applique l'algorithme alphabeta afin de trouver configuration possible qui augmente la distance l'adversaire et l'objectif de son adversaire et minimise la distance entre lui-même et son ojectif.
 Si le joueur est plus proche à son objectif, il s'avance dans son path.
 
+### - Strat 7
+
+Ce joueur se base sur MCTS dans chaque état. Il fait tourner 10 match entre 2 joueurs aléatoires à partir de l'état actuel.
 
 ## Description des résultats
+
 Dans le matrice,la ligne nous montre le joueur 0 et le colonne nous montre le joueur 1. \
 Après la science de statistique, on en déduit 30 jeux est suffisant pour observer la relation entre 2 joueurs.
-
-
 
 $$
 
@@ -84,8 +87,6 @@ $$
 \end{matrix}
 
 $$
-
-
 
 Les éléments avec *  ont toujours le même résultat car les IAs décident de même façon dans chaque jeu.
 Donc les résultats ne sont pas définitifs.
