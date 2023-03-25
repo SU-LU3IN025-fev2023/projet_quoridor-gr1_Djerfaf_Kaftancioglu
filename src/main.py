@@ -567,21 +567,23 @@ def main(str1, str2):
                 objectifs[player] = obj
         return path_init
     
-    def decision_minimax(player,positions,Wall_curr,horizon):
+    def decision_minimax(player,positions,Wall_curr,Walls_used,horizon):
         list_murs=choisir_les_murs(player,positions)
         meilleur_score=-1000
         meilleur_coup=draw_random_wall_location(player,posPlayers)
         for i in range(0,len(list_murs)):
+            nouv_Walls_used=Walls_used[:]
+            nouv_Walls_used[player]=nouv_Walls_used[player]+2
             nouv_Wall_Curr=Wall_curr[:]
             nouv_Wall_Curr.append(list_murs[i][0])
             nouv_Wall_Curr.append(list_murs[i][1])
-            score_eval=minimax_placer_murs(player,positions,nouv_Wall_Curr,horizon)
+            score_eval=minimax_placer_murs(player,positions,nouv_Wall_Curr,nouv_Walls_used,horizon)
             if score_eval>meilleur_score:
                 meilleur_coup=(list_murs[i][0],list_murs[i][1])
 
         return meilleur_coup
 
-    def minimax_placer_murs(player,positions,Wall_curr,horizon):
+    def minimax_placer_murs(player,positions,Wall_curr,Walls_used,horizon):
         lng_joueur=len(calcul_path_A_star_Mininimax(player,posPlayers,Wall_curr))
         lng_adv=len(calcul_path_A_star_Mininimax(1 - player,posPlayers,Wall_curr))
         if horizon==1:
@@ -590,10 +592,15 @@ def main(str1, str2):
             list_murs=choisir_les_murs(player,positions)
             val=-1000
             for mur in list_murs:
+                nouv_Walls_used=Walls_used[:]
+                nouv_Walls_used[player]=nouv_Walls_used[player]+2
+                if nouv_Walls_used[player]>10:
+                    val=lng_adv-lng_joueur
+                    break
                 nouv_Wall_Curr=Wall_curr[:]
                 nouv_Wall_Curr.append(mur[0])
                 nouv_Wall_Curr.append(mur[1])
-                val=max(val,minimax_placer_murs(player,positions,nouv_Wall_Curr,horizon-1))
+                val=max(val,minimax_placer_murs(player,positions,nouv_Wall_Curr,nouv_Walls_used,horizon-1))
             
             return val
         
@@ -601,10 +608,15 @@ def main(str1, str2):
             list_murs=choisir_les_murs(1-player,positions)
             val=1000
             for mur in list_murs:
+                nouv_Walls_used=Walls_used[:]
+                nouv_Walls_used[1-player]=nouv_Walls_used[1-player]+2
+                if nouv_Walls_used[1-player]>10:
+                    val=lng_adv-lng_joueur
+                    break
                 nouv_Wall_Curr=Wall_curr[:]
                 nouv_Wall_Curr.append(mur[0])
                 nouv_Wall_Curr.append(mur[1])
-                val=min(val,minimax_placer_murs(player,positions,nouv_Wall_Curr,horizon-1))
+                val=min(val,minimax_placer_murs(player,positions,nouv_Wall_Curr,nouv_Walls_used,horizon-1))
             
             return val
 
@@ -637,7 +649,7 @@ def main(str1, str2):
             else:
                 wall_to_remplir=walls_used[player]
                 #wall_curr=wallStates(allWalls)
-                ((x1,y1),(x2,y2)) = decision_minimax(player,posPlayers,wall_curr,horizon)
+                ((x1,y1),(x2,y2)) = decision_minimax(player,posPlayers,wall_curr,walls_used[:],horizon)
                 walls[player][wall_to_remplir].set_rowcol(x1,y1)
                 walls[player][wall_to_remplir+1].set_rowcol(x2,y2)
                 walls_used[player]=walls_used[player]+2
@@ -659,7 +671,7 @@ def main(str1, str2):
     
 
     ###################################################################################################################
-    def decision_alpha_beta(player,positions,Wall_curr,horizon):
+    def decision_alpha_beta(player,positions,Wall_curr,Walls_used,horizon):
         list_murs=choisir_les_murs(player,positions)
         meilleur_score=-1000
         meilleur_coup=draw_random_wall_location(player,posPlayers)
@@ -667,17 +679,21 @@ def main(str1, str2):
             nouv_Wall_Curr=Wall_curr[:]
             nouv_Wall_Curr.append(list_murs[i][0])
             nouv_Wall_Curr.append(list_murs[i][1])
-            score_eval=alpha_beta_placer_murs(player,positions,nouv_Wall_Curr,horizon)
+            nouv_Walls_used=Walls_used[:]
+            nouv_Walls_used[player]=nouv_Walls_used[player]+2
+            score_eval=alpha_beta_placer_murs(player,positions,nouv_Wall_Curr,nouv_Walls_used,horizon)
             if score_eval>meilleur_score:
                 meilleur_coup=(list_murs[i][0],list_murs[i][1])
 
         return meilleur_coup
 
-    def alpha_beta_placer_murs(player,positions,Wall_curr,horizon,alpha=-1000,beta=1000):
+    def alpha_beta_placer_murs(player,positions,Wall_curr,Walls_used,horizon,alpha=-1000,beta=1000):
         lng_joueur=len(calcul_path_A_star_Mininimax(player,posPlayers,Wall_curr))
         lng_adv=len(calcul_path_A_star_Mininimax(1 - player,posPlayers,Wall_curr))
         if horizon==1:
             return lng_adv-lng_joueur
+        
+        nouv_Walls_used=Walls_used[:]
         
         if horizon%2==1:
             val=-1000
@@ -686,7 +702,11 @@ def main(str1, str2):
                 nouv_Wall_Curr=Wall_curr[:]
                 nouv_Wall_Curr.append(mur[0])
                 nouv_Wall_Curr.append(mur[1])
-                val=max(val,alpha_beta_placer_murs(player,positions,nouv_Wall_Curr,horizon-1,alpha,beta))
+                nouv_Walls_used[player]=nouv_Walls_used[player]+2
+                if nouv_Walls_used[player]>10:
+                    val=lng_adv-lng_joueur
+                    break
+                val=max(val,alpha_beta_placer_murs(player,positions,nouv_Wall_Curr,nouv_Walls_used,horizon-1,alpha,beta))
                 if val >=beta:
                     break
                 alpha=max(alpha,val)
@@ -700,7 +720,11 @@ def main(str1, str2):
                 nouv_Wall_Curr=Wall_curr[:]
                 nouv_Wall_Curr.append(mur[0])
                 nouv_Wall_Curr.append(mur[1])
-                val=min(val,alpha_beta_placer_murs(player,positions,nouv_Wall_Curr,horizon-1,alpha,beta))
+                nouv_Walls_used[1-player]=nouv_Walls_used[1-player]+2
+                if nouv_Walls_used[1-player]>10:
+                    val=lng_adv-lng_joueur
+                    break
+                val=min(val,alpha_beta_placer_murs(player,positions,nouv_Wall_Curr,nouv_Walls_used,horizon-1,alpha,beta))
                 if val <=alpha:
                     break
                 beta=min(beta,val)
@@ -736,7 +760,7 @@ def main(str1, str2):
             else:
                 wall_to_remplir=walls_used[player]
                 #wall_curr=wallStates(allWalls)
-                ((x1,y1),(x2,y2)) = decision_alpha_beta(player,posPlayers,wall_curr,horizon)
+                ((x1,y1),(x2,y2)) = decision_alpha_beta(player,posPlayers,wall_curr,walls_used[:],horizon)
                 walls[player][wall_to_remplir].set_rowcol(x1,y1)
                 walls[player][wall_to_remplir+1].set_rowcol(x2,y2)
                 walls_used[player]=walls_used[player]+2
@@ -764,13 +788,13 @@ def main(str1, str2):
             for j in range(cMin,cMax):
                 voisins=[(0,1),(0,-1),(1,0),(-1,0)]
                 for v in voisins:
-                    if legal_wall_position((i,j), player, positions,murs_actuel[:]):
-                        murs_actuel.append((i,j))
-                        if legal_wall_position((v[0]+i,v[1]+j), player, positions,murs_actuel[:]):
+                    if legal_wall_position((i,j), player, positions,copy_murs_actuel):
+                        copy_murs_actuel.append((i,j))
+                        if legal_wall_position((v[0]+i,v[1]+j), player, positions,copy_murs_actuel):
                             if ((i,j),(i+v[0],j+v[1])) not in legal_walls and ((i+v[0],j+v[1]),(i,j)) not in legal_walls :
                                 if(is_between(i,posPlayers[1-player][0],objectifs[1-player][0]) and is_between(j,posPlayers[1-player][1],objectifs[1-player][1])):
                                     legal_walls.append(((i,j),(i+v[0],j+v[1])))
-                murs_actuel=copy_murs_actuel[:]
+                copy_murs_actuel=murs_actuel[:]
         
         return legal_walls
     def jouer_aleatoire_monaco(player, walls_used,Murs,positions,joueurs):
@@ -783,7 +807,7 @@ def main(str1, str2):
                 choix_du_jouer=1
             else:
                 #wall_to_remplir=walls_used[player]
-                ((x1,y1),(x2,y2)) = draw_random_wall_location(player, posPlayers)
+                ((x1,y1),(x2,y2)) = draw_random_wall_location(player, positions)
                 #Murs[player][wall_to_remplir].set_rowcol(x1,y1)
                 Murs.append((x1,y1))
                 Murs.append((x2,y2))
@@ -800,9 +824,9 @@ def main(str1, str2):
             #joueurs[player].set_rowcol(row,col)
             #print ("pos joueur",player,":",row,col)
             if (row,col) == objectifs[player]:
-                return True, player
+                return True, player,positions
             
-        return False, player
+        return False, player,positions
     
 
     def decision_monaco(player,positions,Wall_curr,walls_used,horizon):
@@ -830,9 +854,9 @@ def main(str1, str2):
                     pos=posPlayers[:]
                     joueurs=players[:]
                     while(not fin):
-                        fin,gagnat=jouer_aleatoire_monaco(player,walls_used,Murs,pos,joueurs)
+                        fin,gagnat,pos=jouer_aleatoire_monaco(player,walls_used,Murs,pos,joueurs)
                         if not fin:
-                            fin,gagnat=jouer_aleatoire_monaco(1-player,walls_used,Murs,pos,joueurs)
+                            fin,gagnat,pos=jouer_aleatoire_monaco(1-player,walls_used,Murs,pos,joueurs)
                     if gagnat==player:
                         nbwin=nbwin+1
                 
@@ -846,9 +870,9 @@ def main(str1, str2):
                     pos=posPlayers[:]
                     joueurs=players[:]
                     while(not fin):
-                        fin,gagnat=jouer_aleatoire_monaco(1-player,walls_used,Murs,pos,joueurs)
+                        fin,gagnat,pos=jouer_aleatoire_monaco(1-player,walls_used,Murs,pos,joueurs)
                         if not fin:
-                            fin,gagnat=jouer_aleatoire_monaco(player,walls_used,Murs,pos,joueurs)
+                            fin,gagnat,pos=jouer_aleatoire_monaco(player,walls_used,Murs,pos,joueurs)
                     if gagnat==player:
                         nbwin=nbwin+1
                 
@@ -857,12 +881,12 @@ def main(str1, str2):
         
         if horizon%2==1:
             val=-1000
-            list_murs=choisir_les_murs_monaco(player,positions,Wall_curr[:])
+            list_murs=choisir_les_murs_monaco(player,positions,Wall_curr)
             for mur in list_murs:
                 nouv_Wall_Curr=Wall_curr[:]
                 nouv_Wall_Curr.append(mur[0])
                 nouv_Wall_Curr.append(mur[1])
-                val=max(val,monaco_placer_murs(player,positions,nouv_Wall_Curr,horizon-1,horizon_init,alpha,beta))
+                val=max(val,monaco_placer_murs(player,positions,nouv_Wall_Curr,walls_used,horizon-1,horizon_init,alpha,beta))
                 if val >=beta:
                     break
                 alpha=max(alpha,val)
@@ -871,12 +895,13 @@ def main(str1, str2):
         
         if horizon%2==0:
             val=1000
-            list_murs=choisir_les_murs_monaco(1-player,positions,Wall_curr[:])
+            list_murs=choisir_les_murs_monaco(1-player,positions,Wall_curr)
             for mur in list_murs:
                 nouv_Wall_Curr=Wall_curr[:]
                 nouv_Wall_Curr.append(mur[0])
                 nouv_Wall_Curr.append(mur[1])
-                val=min(val,monaco_placer_murs(player,positions,nouv_Wall_Curr,horizon-1,horizon_init,alpha,beta))
+                #print(horizon)
+                val=min(val,monaco_placer_murs(player,positions,nouv_Wall_Curr,walls_used,horizon-1,horizon_init,alpha,beta))
                 if val <=alpha:
                     break
                 beta=min(beta,val)
@@ -945,7 +970,7 @@ def main(str1, str2):
         elif strategy == 'Strat 6':
             return jouer_alpha_beta(player, walls_used,4)
         else:
-            return jouer_monaco(player, walls_used,1)
+            return jouer_monaco(player, walls_used,4)
         
         
             
@@ -997,7 +1022,7 @@ if __name__ == '__main__':
     for i in range(0,int(itr)):
          gagnat.append(main(str1,str2))
     count = Counter(gagnat)
-    print(gagnat)
+    #print(gagnat)
     most_common_element = count.most_common(1)[0][0]
     cpt=count.most_common(1)[0][1]
     print("Le gagnant de partie est ",most_common_element)
