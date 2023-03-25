@@ -8,6 +8,14 @@
 
 ## **Description des choix importants d'implémentation**
 
+### **Choix des murs**
+
+On a défini une fonction de choix des murs afin d'utiliser dans les algorithmes au dessous. Notre fonction nous retourne tous les pairs des murs valides et entre l'objectif de joueur et son position. En autre mots, le liste contient les positions possibles des murs qu'on peut mettre afin d'éviter(rendre difficile) le passage de notre adversaire.
+
+### **Calcul des paths**
+
+On calcule le path afin de trouver le path optimal pour l'objectif le plus proche.Les joueurs utilisent cette fonction pour calculer leur path mais aussi pour calculer celui de l'adversaire et applique leur algo pour la victoire.
+
 ### **Minimax**
 
 Le minimax est un algorithme utilisé dans la théorie des jeux pour déterminer la meilleure stratégie à adopter pour un joueur dans un jeu à deux joueurs à somme nulle, c'est-à-dire un jeu où les gains d'un joueur sont les pertes de l'autre joueur et vice versa.
